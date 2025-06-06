@@ -34,7 +34,7 @@
   "dependencies": {
     "chalk": "^5.2.0",
     "commander": "^10.0.1",
-    "stripe": "^12.13.0"
+    "stripe": "^18.2.1"
   },
   "devDependencies": {
     "@beskar-labs/harmony": "^2.2.8",

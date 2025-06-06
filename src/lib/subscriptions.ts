@@ -191,7 +191,7 @@ export const migrateSubscriptions = async (
         customerPaymentMethod.data[0].id;
 
       let automatic_tax: Stripe.SubscriptionCreateParams['automatic_tax'] =
-        subscription.automatic_tax;
+        { enabled: false };
 
       if (dryRun) {
         const oldCustomer =
@@ -363,12 +363,27 @@ export const migrateSubscriptions = async (
                       subscription.payment_settings.payment_method_options
                         .konbini ?? undefined,
                     us_bank_account:
-                      subscription.payment_settings.payment_method_options
-                        .us_bank_account ?? undefined,
+                      subscription.payment_settings.payment_method_options.us_bank_account
+                        ? {
+                            financial_connections:
+                              subscription.payment_settings.payment_method_options.us_bank_account
+                                .financial_connections
+                                ? {
+                                    // Convert null to undefined for prefetch
+                                    prefetch:
+                                      subscription.payment_settings.payment_method_options.us_bank_account
+                                        .financial_connections.prefetch === null
+                                        ? undefined
+                                        : subscription.payment_settings.payment_method_options.us_bank_account
+                                            .financial_connections.prefetch,
+                                  }
+                                : undefined,
+                          }
+                        : undefined,
                   }
                 : undefined,
               payment_method_types:
-                subscription.payment_settings.payment_method_types,
+                subscription.payment_settings.payment_method_types ?? undefined,
               save_default_payment_method:
                 subscription.payment_settings.save_default_payment_method ??
                 undefined,
@@ -391,16 +406,7 @@ export const migrateSubscriptions = async (
       // for maintaining the same billing period:
       // https://support.stripe.com/questions/recreate-subscriptions-and-plans-after-moving-customer-data-to-a-new-stripe-account
       const trial_end: Stripe.SubscriptionCreateParams['trial_end'] =
-        subscription.current_period_end;
-
-      let promotion_code: Stripe.SubscriptionCreateParams['promotion_code'] =
-        typeof subscription.discount?.promotion_code === 'string'
-          ? subscription.discount?.promotion_code
-          : subscription.discount?.promotion_code?.id;
-
-      if (subscription.discount?.coupon) {
-        promotion_code = undefined;
-      }
+        subscription.items.data[0].current_period_end;
 
       const pending_invoice_item_interval: Stripe.SubscriptionCreateParams['pending_invoice_item_interval'] =
         subscription.pending_invoice_item_interval;
@@ -422,7 +428,6 @@ export const migrateSubscriptions = async (
         cancel_at_period_end: subscription.cancel_at_period_end,
         cancel_at,
         collection_method: subscription.collection_method,
-        coupon: subscription.discount?.coupon.id ?? undefined,
         currency: subscription.currency,
         customer: customerId,
         days_until_due: subscription.days_until_due ?? undefined,
@@ -438,7 +443,6 @@ export const migrateSubscriptions = async (
         payment_behavior: undefined,
         payment_settings,
         pending_invoice_item_interval,
-        promotion_code,
         proration_behavior: undefined,
         transfer_data,
         trial_end,
