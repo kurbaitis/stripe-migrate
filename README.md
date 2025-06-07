@@ -20,6 +20,7 @@ stripe-migrate products --from sk_test_123 --to sk_test_456
 stripe-migrate plans --from sk_test_123 --to sk_test_456
 stripe-migrate coupons --from sk_test_123 --to sk_test_456
 stripe-migrate subscriptions --from sk_test_123 --to sk_test_456
+stripe-migrate freeze-subscriptions --to sk_test_456
 ```
 
 You can also do a dry run of subscriptions, which anonymises and mocks 10 subscribed customers from your old account for testing. This is useful if you're running on a Test Mode account as your destination.

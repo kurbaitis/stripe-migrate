@@ -7,6 +7,7 @@ import { migrateSubscriptions } from './lib/subscriptions';
 import Stripe from 'stripe';
 import { migrateWebhooks } from './lib/webhooks';
 import { migrateProducts } from './lib/products';
+import { freezeSubscriptions } from './lib/freeze-subscriptions';
 
 const createStripeInstances = (
   from?: string,
@@ -98,7 +99,7 @@ program
     }
   });
 
-program
+  program
   .command('subscriptions')
   .option('--from <from>', 'Stripe secret key from the old account', undefined)
   .option('--to <to>', 'Stripe secret key from the new account', undefined)
@@ -126,6 +127,20 @@ program
         customerIds.split(',').filter(Boolean),
         omitCustomerIds.split(',').filter(Boolean),
         dryRun
+      );
+    } catch (error) {
+      handleError(error);
+    }
+  });
+
+program
+  .command('freeze-subscriptions')
+  .option('--to <to>', 'Stripe secret key from the new account', undefined)
+  .action(async ({ to }) => {
+    try {
+      const { newStripe } = createStripeInstances("from", to);
+      await freezeSubscriptions(
+        newStripe,
       );
     } catch (error) {
       handleError(error);
