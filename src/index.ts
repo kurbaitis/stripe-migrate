@@ -136,11 +136,17 @@ program
 program
   .command('freeze-subscriptions')
   .option('--to <to>', 'Stripe secret key from the new account', undefined)
-  .action(async ({ to }) => {
+  .option(
+    '--omitSubscriptionIds <subscriptionIds>',
+    'Omit subscriptions with these Subscription IDs (comma separated)',
+    ''
+  )
+  .action(async ({ to, omitSubscriptionIds }) => {
     try {
       const { newStripe } = createStripeInstances("from", to);
       await freezeSubscriptions(
         newStripe,
+        omitSubscriptionIds.split(',').filter(Boolean)
       );
     } catch (error) {
       handleError(error);
